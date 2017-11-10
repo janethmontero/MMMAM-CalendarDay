@@ -145,12 +145,18 @@ Module.register("MMMAM-CalendarDay", {
 	},
 
 	notificationReceived: function (notification, payload, sender) {
-    console.log("NOTIFICACION RECIBIDA: "+notification);
+    console.log("NOTIFICACION RECIBIDA: "+ notification);
     switch(notification) {
       case 'UPDATE_CALENDAR_LIST':
-        console.log("++++++"+notification);
+        //console.log("++++++"+notification);
 				this.updateDom(this.config.animationSpeed);
         break;
+			case 'RESET_CALENDAR':
+				this.start();
+				break;
+				case 'UPDATE_CURRENT_MEDICATION':
+					this.updateMedicationStatus(payload, true);
+					break;
     }
   },
 
@@ -307,12 +313,27 @@ Module.register("MMMAM-CalendarDay", {
 							timeWrapper.innerHTML = moment(event.startDate, "x").format("hh:mm A"); //this.capFirst(moment(event.startDate, "x").fromNow());
 
 							var symbol = document.createElement("span");
+
+							var timeNow = moment();
+							var timeRange5 = parseInt(event.startDate) - (1000 * 60 * 5);
+
 							if ( event.title.includes('Cita') || event.title.includes('cita') ) {
 								symbol.className = "fa fa-map-marker" ;
 								symbol.style.paddingLeft = "11px";
 								symbol.style.paddingRight = "3px";
 
+							}else if(timeNow.isBetween(moment(timeRange5, "x"), moment(event.startDate, "x")) && this.getStatusMedication(event)) {
+								symbol.className = "fa fa-check" ; //check-square-o
+								symbol.style.paddingLeft = "10px";
+
+								symbol.style.color = "green";
+								timeWrapper.style.paddingRight = "3px";
 							}else{
+								//var range = moment().range((event.startDate - 1000 * 60 * 5), event.startDate);
+
+								//console.log(timeRange5);
+								//console.log(timeNow + " esta entre ["+ moment(timeRange5, "x") +", "+ moment(event.startDate, "x") +"]");
+								//console.log("***el evento " + event.title + ": " + timeNow.isBetween(moment(timeRange5, "x"), moment(event.startDate, "x")));
 								symbol.className = "fa fa-square-o" ;
 								symbol.style.paddingLeft = "10px";
 							}
@@ -372,7 +393,7 @@ Module.register("MMMAM-CalendarDay", {
 					//se tendra que hacer por medio de otro modulo (comando voz y lector QR).
 					/////////
 
-					this.updateMedicationStatus(event, true);
+					//this.updateMedicationStatus(event, true);
 
 					var symbol = document.createElement("span");
 
@@ -468,7 +489,7 @@ Module.register("MMMAM-CalendarDay", {
 		var events = [];
 		var today = moment().startOf("day");
 
-		console.log(this.calendarData)
+		//console.log(this.calendarData)
 
 		for (var c in this.calendarData) {
 			var calendar = this.calendarData[c];
@@ -671,14 +692,14 @@ Module.register("MMMAM-CalendarDay", {
 
 		for (let i = 0; i < this.medicalHistory.length; i++) {
         	//console.log(event.title+"  "+exist);
-        	if (this.medicalHistory[i].title === event.title ) {
+        	if (this.medicalHistory[i].title === event.title && this.medicalHistory[i].startDate === event.startDate) {
         		exist = true;
         	}
        	}
 
        	if (!exist) {
-       		Event.prototype.statusMedication = null;
-       		event.statusMedication = false;
+       		//Event.prototype.statusMedication = null;
+       		//event.statusMedication = false;
        		this.addToHistory(event);
        	}
 	},
@@ -687,8 +708,9 @@ Module.register("MMMAM-CalendarDay", {
 	updateMedicationStatus(event, bool){
     	for (var i = 0; i < this.medicalHistory.length; i++) {
         	if (this.medicalHistory[i].title === event.title ) {
-        		this.medicalHistory[i].statusMedication = bool;
-        		console.log(" --- " + this.medicalHistory[i].title + ": "+ this.medicalHistory[i].statusMedication);
+        		//this.medicalHistory[i].statusMedication = bool;
+						this.medicalHistory[i].location = bool;
+        		//console.log(" --- " + this.medicalHistory[i].title + ": "+ this.medicalHistory[i].statusMedication);
         	}
        	}
 	},
@@ -698,10 +720,10 @@ Module.register("MMMAM-CalendarDay", {
 
     	for (var i = 0; i < this.medicalHistory.length; i++) {
         	if (this.medicalHistory[i].title === event.title ) {
-        		return  this.medicalHistory[i].statusMedication;
+        		return  this.medicalHistory[i].location;
         	}
-       	}
-       	return false;
+      }
+      return false;
 	},
 
 	addToHistory(event){ // recibe la alarma y un booleano para indicar si realizo la toma

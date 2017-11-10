@@ -71,6 +71,7 @@ var CalendarFetcher = function(url, reloadInterval, maximumEntries, maximumNumbe
 
 			for (var e in data) {
 				var event = data[e];
+				//console.log(event);
 				var now = new Date();
 				var today = moment().startOf("day").toDate();
 
@@ -118,7 +119,8 @@ var CalendarFetcher = function(url, reloadInterval, maximumEntries, maximumNumbe
 					var location = event.location || false;
 					var geo = event.geo || false;
 					var description = event.description || false;
-					
+					var status = event.status || false;
+
 
 					if (typeof event.rrule != "undefined" && !isFacebookBirthday) {
 						var rule = event.rrule;
@@ -128,12 +130,12 @@ var CalendarFetcher = function(url, reloadInterval, maximumEntries, maximumNumbe
 						//console.log("***Prueba*** Evento con regla: " + title);
 
 						for (var d in dates) {
-							//LE QUITAMOS QUE BUSQUE LOS EVENTOS PROXIMOS, 
+							//LE QUITAMOS QUE BUSQUE LOS EVENTOS PROXIMOS,
 							//PARA QUE MUESTRE TODOS LOS DEL DIA
 							startDate = moment(new Date(dates[d]));
 							//console.log('---- Inicio: '+ new Date(dates[d]));
 							endDate  = moment(parseInt(startDate.format("x")) + duration, "x");
-							
+
 							//if (endDate.format("x") > now) {
 								newEvents.push({
 									title: title,
@@ -144,7 +146,8 @@ var CalendarFetcher = function(url, reloadInterval, maximumEntries, maximumNumbe
 									firstYear: event.start.getFullYear(),
 									location: location,
 									geo: geo,
-									description: description
+									description: description,
+									status: status
 								});
 							//}
 						}
@@ -184,12 +187,15 @@ var CalendarFetcher = function(url, reloadInterval, maximumEntries, maximumNumbe
 							class: event.class,
 							location: location,
 							geo: geo,
-							description: description
+							description: description,
+							status: status
 						});
 
 					}
 				}
 			}
+
+			//console.log(event);
 
 			newEvents.sort(function(a, b) {
 				return a.startDate - b.startDate;
